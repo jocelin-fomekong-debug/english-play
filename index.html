@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fun English & Maths - 5 ans</title>
+    <style>
+      :root {
+        --bg: #f5fbff;
+        --card: #ffffff;
+        --primary: #4f46e5;
+        --success: #16a34a;
+        --danger: #dc2626;
+        --accent: #f59e0b;
+        --text: #1f2937;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: "Comic Sans MS", "Trebuchet MS", system-ui, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at top, #dbeafe, var(--bg));
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      h1 {
+        text-align: center;
+        font-size: clamp(1.4rem, 4vw, 2.2rem);
+        margin: 0.5rem 0;
+      }
+
+      .subtitle {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.65rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      .tab-btn {
+        background: #e5e7eb;
+      }
+
+      .tab-btn.active {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 1rem;
+        box-shadow: 0 8px 30px rgb(0 0 0 / 8%);
+      }
+
+      .big {
+        font-size: clamp(2rem, 10vw, 5rem);
+        text-align: center;
+        margin: 0.5rem 0;
+      }
+
+      .choices {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.6rem;
+      }
+
+      .choice {
+        background: #f3f4f6;
+        font-size: clamp(1.1rem, 3vw, 1.6rem);
+        min-height: 55px;
+      }
+
+      .choice.correct {
+        background: #dcfce7;
+      }
+
+      .choice.wrong {
+        background: #fee2e2;
+      }
+
+      .status {
+        text-align: center;
+        font-size: 1.1rem;
+        min-height: 1.7rem;
+        margin: 0.4rem 0;
+      }
+
+      .score {
+        text-align: center;
+        font-weight: bold;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: center;
+        gap: 0.6rem;
+        margin-top: 0.8rem;
+      }
+
+      .secondary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .primary {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .hint {
+        text-align: center;
+        font-size: 0.95rem;
+        margin-top: 0.8rem;
+      }
+
+      .stars {
+        text-align: center;
+        font-size: 1.4rem;
+        min-height: 1.8rem;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎈 Fun English & Maths 🎲</h1>
+      <p class="subtitle">Jeu éducatif pour apprendre en s'amusant (5 ans)</p>
+
+      <div class="tabs">
+        <button id="tabAlphabet" class="tab-btn active">🔤 Alphabet anglais</button>
+        <button id="tabMath" class="tab-btn">➕ Mathématiques</button>
+      </div>
+
+      <section id="alphabetSection" class="card">
+        <div class="score">Points : <span id="alphabetScore">0</span></div>
+        <p class="status" id="alphabetStatus"></p>
+        <div class="big" id="letterPrompt">A</div>
+        <p style="text-align: center">Trouve la bonne lettre :</p>
+        <div class="choices" id="alphabetChoices"></div>
+        <div class="actions">
+          <button class="secondary" id="speakBtn">🔊 Écouter la lettre</button>
+          <button class="primary" id="nextAlphabet">Suivant</button>
+        </div>
+        <p class="hint">Astuce parent : cliquer sur "Écouter" pour entendre la prononciation anglaise.</p>
+      </section>
+
+      <section id="mathSection" class="card hidden">
+        <div class="score">Points : <span id="mathScore">0</span></div>
+        <p class="status" id="mathStatus"></p>
+        <div class="big" id="mathPrompt">1 + 1 = ?</div>
+        <p style="text-align: center">Choisis la bonne réponse :</p>
+        <div class="choices" id="mathChoices"></div>
+        <div class="actions">
+          <button class="primary" id="nextMath">Suivant</button>
+        </div>
+      </section>
+
+      <div class="stars" id="stars">⭐</div>
+    </div>
+
+    <script>
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+      const ui = {
+        tabAlphabet: document.getElementById("tabAlphabet"),
+        tabMath: document.getElementById("tabMath"),
+        alphabetSection: document.getElementById("alphabetSection"),
+        mathSection: document.getElementById("mathSection"),
+        letterPrompt: document.getElementById("letterPrompt"),
+        alphabetChoices: document.getElementById("alphabetChoices"),
+        alphabetStatus: document.getElementById("alphabetStatus"),
+        alphabetScore: document.getElementById("alphabetScore"),
+        speakBtn: document.getElementById("speakBtn"),
+        nextAlphabet: document.getElementById("nextAlphabet"),
+        mathPrompt: document.getElementById("mathPrompt"),
+        mathChoices: document.getElementById("mathChoices"),
+        mathStatus: document.getElementById("mathStatus"),
+        mathScore: document.getElementById("mathScore"),
+        nextMath: document.getElementById("nextMath"),
+        stars: document.getElementById("stars"),
+      };
+
+      let alphabetScore = 0;
+      let mathScore = 0;
+      let currentLetter = "A";
+      let currentMathAnswer = 2;
+
+      function shuffle(arr) {
+        const copy = [...arr];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function randomLetter() {
+        return alphabet[Math.floor(Math.random() * alphabet.length)];
+      }
+
+      function buildAlphabetRound() {
+        currentLetter = randomLetter();
+        ui.letterPrompt.textContent = currentLetter;
+        const wrongs = shuffle(alphabet.filter((l) => l !== currentLetter)).slice(0, 3);
+        const choices = shuffle([currentLetter, ...wrongs]);
+        ui.alphabetChoices.innerHTML = "";
+        choices.forEach((c) => {
+          const b = document.createElement("button");
+          b.className = "choice";
+          b.textContent = c;
+          b.onclick = () => checkAlphabet(c, b);
+          ui.alphabetChoices.appendChild(b);
+        });
+      }
+
+      function updateStars() {
+        const total = alphabetScore + mathScore;
+        const count = Math.max(1, Math.min(8, Math.floor(total / 2) + 1));
+        ui.stars.textContent = "⭐".repeat(count);
+      }
+
+      function celebrate(message, isGood) {
+        if (isGood) {
+          ui.alphabetStatus.textContent = message;
+          ui.mathStatus.textContent = message;
+        }
+      }
+
+      function checkAlphabet(choice, btn) {
+        const all = [...ui.alphabetChoices.querySelectorAll("button")];
+        all.forEach((b) => (b.disabled = true));
+        if (choice === currentLetter) {
+          alphabetScore += 1;
+          ui.alphabetScore.textContent = alphabetScore;
+          btn.classList.add("correct");
+          ui.alphabetStatus.textContent = "Bravo ! 🎉";
+          updateStars();
+        } else {
+          btn.classList.add("wrong");
+          const good = all.find((b) => b.textContent === currentLetter);
+          if (good) good.classList.add("correct");
+          ui.alphabetStatus.textContent = "Presque ! Essaie encore 😊";
+        }
+      }
+
+      function buildMathRound() {
+        const a = Math.floor(Math.random() * 6);
+        const b = Math.floor(Math.random() * 6);
+        const isAdd = Math.random() > 0.35;
+        let prompt;
+        if (isAdd) {
+          currentMathAnswer = a + b;
+          prompt = `${a} + ${b} = ?`;
+        } else {
+          const bigger = Math.max(a, b);
+          const smaller = Math.min(a, b);
+          currentMathAnswer = bigger - smaller;
+          prompt = `${bigger} - ${smaller} = ?`;
+        }
+        ui.mathPrompt.textContent = prompt;
+
+        const wrongs = new Set();
+        while (wrongs.size < 3) {
+          const candidate = Math.max(0, currentMathAnswer + Math.floor(Math.random() * 5) - 2);
+          if (candidate !== currentMathAnswer) wrongs.add(candidate);
+        }
+
+        const choices = shuffle([currentMathAnswer, ...wrongs]);
+        ui.mathChoices.innerHTML = "";
+        choices.forEach((c) => {
+          const b = document.createElement("button");
+          b.className = "choice";
+          b.textContent = c;
+          b.onclick = () => checkMath(c, b);
+          ui.mathChoices.appendChild(b);
+        });
+      }
+
+      function checkMath(choice, btn) {
+        const all = [...ui.mathChoices.querySelectorAll("button")];
+        all.forEach((b) => (b.disabled = true));
+        if (choice === currentMathAnswer) {
+          mathScore += 1;
+          ui.mathScore.textContent = mathScore;
+          btn.classList.add("correct");
+          ui.mathStatus.textContent = "Super ! ✅";
+          updateStars();
+        } else {
+          btn.classList.add("wrong");
+          const good = all.find((b) => Number(b.textContent) === currentMathAnswer);
+          if (good) good.classList.add("correct");
+          ui.mathStatus.textContent = "Ce n'est pas grave, on recommence 💪";
+        }
+      }
+
+      function speakLetter() {
+        const text = currentLetter;
+        if ("speechSynthesis" in window) {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "en-US";
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(u);
+        } else {
+          ui.alphabetStatus.textContent = "Audio non disponible sur cet appareil.";
+        }
+      }
+
+      function showTab(tab) {
+        const alpha = tab === "alphabet";
+        ui.alphabetSection.classList.toggle("hidden", !alpha);
+        ui.mathSection.classList.toggle("hidden", alpha);
+        ui.tabAlphabet.classList.toggle("active", alpha);
+        ui.tabMath.classList.toggle("active", !alpha);
+      }
+
+      ui.tabAlphabet.addEventListener("click", () => showTab("alphabet"));
+      ui.tabMath.addEventListener("click", () => showTab("math"));
+      ui.nextAlphabet.addEventListener("click", () => {
+        ui.alphabetStatus.textContent = "";
+        buildAlphabetRound();
+      });
+      ui.nextMath.addEventListener("click", () => {
+        ui.mathStatus.textContent = "";
+        buildMathRound();
+      });
+      ui.speakBtn.addEventListener("click", speakLetter);
+
+      buildAlphabetRound();
+      buildMathRound();
+      updateStars();
+    </script>
+  </body>
+</html>
